@@ -14,10 +14,15 @@ Codex用の書き込みスキルは [skills/hy0020-flash/SKILL.md](skills/hy0020
 |---|---|---|---|
 | UART単独テスト（既存） | `sketches/uart_test/build.ps1` | `build/uart_test/uart_test.hex` | [UARTサンプル](sketches/uart_test/README.md) |
 | BLE文字列送信（NUS） | `sketches/ble_text/build.ps1` | `build/ble_text/zephyr/zephyr.hex` | [BLEサンプルのREADME](sketches/ble_text/README.md) |
+| mouse_type8のUART–BLE中継 | `sketches/mouse_uart_ble/build.ps1` | `build/mouse_uart_ble/zephyr/zephyr.hex` | [中継サンプルと専用シェル](sketches/mouse_uart_ble/README.md) |
 
 既存のUARTプログラムとHEXを残して、BLEサンプルを追加しています。HY0020で起動するのは最後に書き込んだファームウェアです。BLE版はスマホ等から接続し、通知を有効にすると文字列を送信します。
 
 Windows PCからのBLE接続・送受信には`tools/ble_monitor.py`を使います。[PCとの通信手順](sketches/ble_text/README.md#windows-pcで受信送信する)を参照してください。
+
+mouse_type8のUARTをBLEへ中継する場合は、[mouse_uart_ble](sketches/mouse_uart_ble/README.md)を使います。専用PCツール`tools/mouse_ble_shell.py`から`info ver`等を送受信できます。
+
+2026年11月3日に、DMA受信バッファを128バイトへ修正した版で、マウス給電・UART接続からBLE越しに`info ver`、`info battery`、`help`の応答を確認しました。検証範囲は[中継サンプルのREADME](sketches/mouse_uart_ble/README.md#検証範囲)を参照してください。
 
 ## 1. 準備するもの
 
@@ -94,6 +99,8 @@ $openocdExe = Join-Path $env:USERPROFILE 'Downloads\xpack-openocd-0.12.0-7-win32
 6. **Replace Driver** または **Install Driver** を押し、完了を待ちます。
 
 変更後は左側にもWinUSBと表示されます。同じ設定でReinstall Driverを押す必要はありません。
+
+USBポートを変更した際、同じFT232HでもFTDI用ドライバーに戻って認識された実績があります。`LIBUSB_ERROR_NOT_SUPPORTED`が出た場合は、その接続位置でのドライバーも確認し、必要ならWinUSBを再割り当てしてください。
 
 WinUSBにすると、通常のCOMポートとしては表示されません。今回のPythonツールはその状態で動作します。UART受信のためにFTDIのVCPドライバーへ戻す必要はありません。[OpenOCDのWindows向けドライバー説明](https://github.com/openocd-org/openocd/blob/master/README.Windows.md)
 
@@ -332,6 +339,7 @@ HY0020_test/
 │  │  └─ src/
 │  │     ├─ startup.c
 │  │     └─ main.c
+│  ├─ mouse_uart_ble/           mouse_type8の双方向UART–BLE中継
 │  └─ ble_text/                 BLE文字列送信（NUS）
 │     ├─ README.md
 │     ├─ build.ps1
@@ -344,10 +352,14 @@ HY0020_test/
 ├─ tools/
 │  ├─ uart_monitor.py           共通：WinUSBのまま有線UART受信
 │  ├─ ble_monitor.py            PCのBluetoothでNUS送受信
+│  ├─ mouse_ble_shell.py        mouse_type8の専用BLEシェル
+│  ├─ mouse_ble_gateway.py      オプション：BLEとlocalhost TCPの中継
+│  ├─ mouse_gui_ble.py          オプション：既存GUIにBLEポートを追加
 │  └─ requirements-ble.txt      PC用BLEライブラリ
 ├─ build/                       生成物（Git管理外）
 │  ├─ uart_test/                UART版HEX・ELF・BIN・MAP
 │  ├─ ble_text/zephyr/          BLE版HEX・ELF等
+│  ├─ mouse_uart_ble/zephyr/    中継版HEX・ELF等
 │  ├─ zephyr-cache/            SDKのビルドキャッシュ
 │  └─ legacy_led/              以前のLED版生成物（保存用）
 └─ .tools/                      Pythonライブラリ（Git管理外）

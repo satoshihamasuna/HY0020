@@ -1,7 +1,7 @@
 [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium')]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('uart', 'ble')]
+    [ValidateSet('uart', 'ble', 'mouse')]
     [string]$Firmware,
     [string]$ProjectRoot = (Get-Location).Path,
     [string]$OpenOcdPath = (Join-Path $env:USERPROFILE 'Downloads\xpack-openocd-0.12.0-7-win32-x64\xpack-openocd-0.12.0-7\bin\openocd.exe'),
@@ -19,12 +19,16 @@ $configPath = Join-Path $projectPath 'openocd\ft232h-hy0020.cfg'
 if (!(Test-Path -LiteralPath $configPath -PathType Leaf)) {
     throw "OpenOCD configuration not found: $configPath"
 }
-$hexRelative = if ($Firmware -eq 'ble') { 'build\ble_text\zephyr\zephyr.hex' } else { 'build\uart_test\uart_test.hex' }
+$hexRelative = switch ($Firmware) {
+    'uart' { 'build\uart_test\uart_test.hex' }
+    'ble' { 'build\ble_text\zephyr\zephyr.hex' }
+    'mouse' { 'build\mouse_uart_ble\zephyr\zephyr.hex' }
+}
 $hexPath = (Join-Path $projectPath $hexRelative).Replace('\', '/')
 if ($hexPath.Contains('{') -or $hexPath.Contains('}')) {
     throw 'Project paths containing Tcl braces are not supported.'
 }
-$speed = if ($Firmware -eq 'ble') { 100 } else { 10 }
+$speed = if ($Firmware -eq 'uart') { 10 } else { 100 }
 
 if ($CheckOnly) {
     $commands = 'adapter speed 10; init; shutdown'

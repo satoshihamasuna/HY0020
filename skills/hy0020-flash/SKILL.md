@@ -15,8 +15,11 @@ description: "HY0020（AE-HY0020-DIP / nRF52832）をWindowsのFT232HとOpenOCD�
 |---|---|---|---|
 | UART単独版 | `sketches/uart_test/src/main.c` | `sketches/uart_test/build.ps1` | `build/uart_test/uart_test.hex` |
 | BLE文字列版 | `sketches/ble_text/src/main.c` | `sketches/ble_text/build.ps1` | `build/ble_text/zephyr/zephyr.hex` |
+| mouse_type8中継版 | `sketches/mouse_uart_ble/src/main.c` | `sketches/mouse_uart_ble/build.ps1` | `build/mouse_uart_ble/zephyr/zephyr.hex` |
 
 共有設定は `openocd/ft232h-hy0020.cfg`。導入の詳細はルートの `README.md`、BLEの受信手順は `sketches/ble_text/README.md` を必要時に読む。パスやサンプルの配置が変わっていたら、現行ファイルに合わせる。
+
+mouse_type8のUARTを中継する場合は `sketches/mouse_uart_ble/README.md` を読む。デバイス名は `HY0020-MOUSE`、P0.06/TXとP0.08/RXによる115200bpsの双方向通信。デバッグ文を同じUARTへ出すとバイナリを壊すため、通常の文字列サンプルをそのまま使わない。
 
 既知のOpenOCDは `%USERPROFILE%\Downloads\xpack-openocd-0.12.0-7-win32-x64\xpack-openocd-0.12.0-7\bin\openocd.exe`。SDKは `C:\ncs\v3.4.1`。別配置では補助スクリプトの `-OpenOcdPath` / `-ProjectRoot` を指定する。
 
@@ -40,6 +43,8 @@ HY0020へ別途3.3Vを供給し、GNDを共通にする。信号線だけでは�
 
 FT232Hの標準USB IDは `0403:6014`。OpenOCDにはWinUSBを使う。Zadigでは対象IDを確認し、右側でWinUSBを選んでReplace Driverを押す。**このプロジェクトのUART受信にもWinUSBを使えるので、VCPドライバーへ戻す案内は不要。**
 
+USBポート変更後、FTDIBUSが再び割り当てられていた実績がある。過去にWinUSBへ変更済みでも、`LIBUSB_ERROR_NOT_SUPPORTED`なら現在の接続位置のドライバーを確認する。
+
 ## 書き込みの実行
 
 このスキル内の `scripts/flash_hy0020.ps1` を使う。`$skillRoot`は、実際に読み込んだ本スキルのディレクトリに置き換える。スクリプトはビルドやドライバー変更を自動では行わない。
@@ -50,6 +55,9 @@ FT232Hの標準USB IDは `0403:6014`。OpenOCDにはWinUSBを使う。Zadigで�
 
 # BLE版：100kHzで書き込み・照合・リセット
 & "$skillRoot/scripts/flash_hy0020.ps1" -Firmware ble
+
+# mouse_type8のUART–BLE中継版（100kHz）
+& "$skillRoot/scripts/flash_hy0020.ps1" -Firmware mouse
 
 # UART単独版：10kHzで書き込み・照合・リセット
 & "$skillRoot/scripts/flash_hy0020.ps1" -Firmware uart
@@ -65,6 +73,7 @@ FT232Hの標準USB IDは `0403:6014`。OpenOCDにはWinUSBを使う。Zadigで�
 
 - 通常UART版は10kHzで成功。BLE版（約126KB）は10kHzだと転送中に `Failed to write memory` が発生し、100kHzで書き込み・照合に成功した。BLE版の通信エラーに対して無条件にさらに低速化しない。
 - `nrf52_recover` は10kHzで成功した。BLE復旧時は **10kHzでrecover → 100kHzへ変更 → 書き込み** の順。
+- mouse_type8中継版もこの順で2026年11月3日に書き込み・照合・リセットが成功し、広告名 `HY0020-MOUSE` の検出まで確認した。実マウスからのUART応答は別途確認する。
 - 一度recover済みでも、後の接続時にAPPROTECTが再び有効だった実績がある。過去の復旧だけを根拠に、現在も解除済みと決めつけない。
 - OpenOCD設定ではターゲット設定を読み込んだ後に速度を指定する。ターゲット設定が速度を上書きするため。
 
