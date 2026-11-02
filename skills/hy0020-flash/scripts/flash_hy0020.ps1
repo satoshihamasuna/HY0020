@@ -3,7 +3,7 @@ param(
     [Parameter(Mandatory = $true)]
     [ValidateSet('uart', 'ble')]
     [string]$Firmware,
-    [string]$ProjectRoot = (Join-Path $env:USERPROFILE 'Documents\git\HY0020_test'),
+    [string]$ProjectRoot = (Get-Location).Path,
     [string]$OpenOcdPath = (Join-Path $env:USERPROFILE 'Downloads\xpack-openocd-0.12.0-7-win32-x64\xpack-openocd-0.12.0-7\bin\openocd.exe'),
     [switch]$CheckOnly,
     [switch]$Recover

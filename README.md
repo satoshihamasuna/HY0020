@@ -63,10 +63,10 @@ LED、Arduino IDE、J-Link、追加のUSB-UART変換器は、この手順では�
 2. 確認に使用したファイルは `xpack-openocd-0.12.0-7-win32-x64.zip` です。`Source code`ではなく実行ファイル入りのZIPを選びます。
 3. ZIPを展開します。`openocd.exe`だけを移動せず、DLLやスクリプトを含むフォルダー全体を残します。
 
-このPCで使用した配置は次のとおりです。
+ユーザー名を含めない配置例は次のとおりです。`%USERPROFILE%`は各ユーザーのホームフォルダーを表します。
 
 ```text
-C:\Users\sato1\Downloads\xpack-openocd-0.12.0-7-win32-x64\
+%USERPROFILE%\Downloads\xpack-openocd-0.12.0-7-win32-x64\
 └─ xpack-openocd-0.12.0-7\
    ├─ bin\
    │  ├─ openocd.exe
@@ -77,7 +77,7 @@ C:\Users\sato1\Downloads\xpack-openocd-0.12.0-7-win32-x64\
 以降のPowerShellコマンドは、プロジェクトのルートフォルダーで実行します。`$openocdExe`は使うPowerShellごとに設定してください。別の場所に展開した場合はパスを変更します。
 
 ```powershell
-Set-Location 'C:\Users\sato1\Documents\git\HY0020_test'
+# 展開・クローンしたHY0020_testフォルダーで実行します。
 $openocdExe = Join-Path $env:USERPROFILE 'Downloads\xpack-openocd-0.12.0-7-win32-x64\xpack-openocd-0.12.0-7\bin\openocd.exe'
 & $openocdExe --version
 ```
